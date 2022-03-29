@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:pdftoolapplicario/screens/doc_scan.dart';
 import 'package:pdftoolapplicario/ui_view/slider_layout_view.dart';
 import 'package:flutter_search_bar/flutter_search_bar.dart';
 class FirstScreen extends StatefulWidget{
@@ -13,7 +14,6 @@ class _FirstScreen extends State<FirstScreen>{
 
   AppBar buildAppBar(BuildContext context) {
     return AppBar(
-
         centerTitle: false,
         titleSpacing: 0.0,
         toolbarHeight: 60,
@@ -62,17 +62,24 @@ class _FirstScreen extends State<FirstScreen>{
       body: const Center(
         child: Text('My Page!'),
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {
-          // Add your onPressed code here!
-        },
-        autofocus: true,
-        elevation: 0.0,
-        hoverColor: Colors.green,
-        hoverElevation: 0.0,
-        label: const Text('Scan Document'),
-        icon: const Icon(CupertinoIcons.camera_viewfinder),
-        backgroundColor: Colors.pink,
+      floatingActionButton: Stack(
+        children: <Widget>[
+          Padding(padding: EdgeInsets.only(left:31, bottom: 50),
+            child: Align(
+              alignment: Alignment.bottomCenter,
+              child: FloatingActionButton.extended(
+                onPressed: () => Navigator.of(context)
+                    .push(MaterialPageRoute(builder: (_) => Doc_Scanner())),
+                autofocus: true,
+                elevation: 0.0,
+                hoverColor: Colors.green,
+                hoverElevation: 0.0,
+                label: const Text('Scan Document'),
+                icon: const Icon(CupertinoIcons.camera_viewfinder),
+                backgroundColor: Colors.pink,
+              ),),
+      ),
+      ],
       ),
       drawer: Drawer(
         // Add a ListView to the drawer. This ensures the user can scroll
@@ -102,7 +109,7 @@ class _FirstScreen extends State<FirstScreen>{
                   children: const [
                     Padding(
                       padding: EdgeInsets.only(left: 42.0 , bottom: 3),
-                      child: Icon(CupertinoIcons.doc_fill, size: 30, color: Colors.grey,) ,
+                      child: Icon(CupertinoIcons.doc_fill, size: 30, color: Colors.pink,) ,
                     ),
                     Padding(
                       padding: EdgeInsets.only(left: 8.0 , bottom: 3),
@@ -128,7 +135,9 @@ class _FirstScreen extends State<FirstScreen>{
                   ],
                 ),
               ) ,
-              onTap: () {},
+              onTap: () {
+                Navigator.of(context).push(MaterialPageRoute(builder: (_) => Doc_Scanner()));
+              },
             ),
             ListTile(
               title: Container(

@@ -30,27 +30,31 @@ class _Doc_Scanner extends State<Doc_Scanner> {
       backgroundColor: Color(0xfffafafa),
       appBar: AppBar(
         centerTitle: false,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
         titleSpacing: 0.0,
         toolbarHeight: 60,
         title: const Padding(
-          padding: EdgeInsets.only(left: 25.0 , bottom: 0),
-          child: Text("Doc Scanner" ,style: TextStyle(color: Colors.black , fontWeight: FontWeight.w500 , fontSize: 20),),
+          padding: EdgeInsets.only(left: 0.0 , bottom: 0),
+          child: Text("Doc Scanner" ,style: TextStyle(color: Colors.black , fontWeight: FontWeight.w700 , fontSize: 22),),
         ) , backgroundColor: Color(0xfff8f5f0) ,iconTheme: IconThemeData(color: Colors.black) ,elevation: 0.0,
         actions: [
           IconButton(
-              icon: Icon(CupertinoIcons.square_arrow_down_on_square_fill),
+              icon: Icon(CupertinoIcons.square_arrow_down_on_square , size: 25, color: Colors.black,),
               onPressed: () {
                 createPDF();
                 savePDF();
               }),
           IconButton(
-              icon: Icon(CupertinoIcons.question_diamond_fill),
+              icon: Icon(CupertinoIcons.question_diamond , size: 25, color: Colors.black),
               onPressed: () {
                 createPDF();
                 savePDF();
               }),
           IconButton(
-              icon: Icon(CupertinoIcons.pencil_circle_fill),
+              icon: Icon(CupertinoIcons.pencil_circle , size: 25 , color: Colors.black),
               onPressed: () async {
                 final sp = await opendialogue();
                 if(sp!=Null){
