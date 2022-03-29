@@ -6,7 +6,6 @@ description: A new Flutter project.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 
 # The following defines the version and build number for your application.
-# A version number is three numbers separated by dots, like 1.2.43
 # followed by an optional build number separated by a +.
 # Both the version and the builder number may be overridden in flutter
 # build by specifying --build-name and --build-number, respectively.
@@ -33,7 +32,14 @@ dependencies:
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
-  cupertino_icons: ^1.0.2
+  cupertino_icons: ^1.0.4
+  flutter_search_bar: ^2.1.0
+  pdf: ^3.7.3
+  flushbar: ^1.10.4
+  image_picker: ^0.8.4+11
+  path_provider: ^2.0.9
+  open_file: ^3.2.1
+
 
 
 dev_dependencies:
@@ -45,7 +51,7 @@ dev_dependencies:
   # activated in the `analysis_options.yaml` file located at the root of your
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
-  flutter_lints: ^1.0.0
+  flutter_lints: ^1.0.4
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

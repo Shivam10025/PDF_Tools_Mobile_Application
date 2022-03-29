@@ -83,7 +83,9 @@ class _SliderLayoutViewState extends State<SliderLayoutView> {
                           color: Colors.cyan, borderRadius: BorderRadius.circular(20)
                       ),
                       child: FlatButton(
-                        onPressed: () {},
+                        onPressed: () {
+
+                        },
                         child: const Text(
                         'Get Started',
                         style:

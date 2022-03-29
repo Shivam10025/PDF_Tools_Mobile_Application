@@ -1,6 +1,8 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:pdftoolapplicario/screens/doc_scan.dart';
+import 'package:pdftoolapplicario/screens/first_screen.dart';
 
 import 'screens/landing_page.dart';
 
@@ -29,8 +31,9 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
         platform: TargetPlatform.iOS,
+          primaryColor: Color(0xfff8f5f0)
       ),
-      home: LandingPage(),
+      home: Doc_Scanner(),
     );
   }
 }
