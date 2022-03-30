@@ -33,7 +33,7 @@ class MyApp extends StatelessWidget {
         platform: TargetPlatform.iOS,
           primaryColor: Color(0xfff8f5f0)
       ),
-      home: FirstScreen(),
+      home: Doc_Scanner(),
     );
   }
 }

@@ -1,5 +1,6 @@
 import 'dart:io';
-
+import 'package:path/path.dart' as Path;
+import 'dart:async';
 import 'package:flushbar/flushbar.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -8,8 +9,14 @@ import 'package:path_provider/path_provider.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:open_file/open_file.dart';
-
-
+import 'package:photofilters/filters/filters.dart';
+import 'package:photofilters/filters/preset_filters.dart';
+import 'package:photofilters/widgets/photo_filter.dart';
+import 'package:photofilters/photofilters.dart';
+import 'package:image/image.dart' as imageLib;
+import 'package:image_picker/image_picker.dart';
+import 'package:image_cropper/image_cropper.dart';
+import 'package:image_picker/image_picker.dart';
 
 class Doc_Scanner extends StatefulWidget {
   @override
@@ -23,11 +30,13 @@ class _Doc_Scanner extends State<Doc_Scanner> {
   late var prev=0;
   List<File> _image = [];
   late TextEditingController _controller=TextEditingController();
-
+  late String fileName;
+  List<Filter> filters = presetFiltersList;
+  late File imageFile;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(0xfffafafa),
+      backgroundColor: const Color(0xfffafafa),
       appBar: AppBar(
         centerTitle: false,
         leading: IconButton(
@@ -39,22 +48,22 @@ class _Doc_Scanner extends State<Doc_Scanner> {
         title: const Padding(
           padding: EdgeInsets.only(left: 0.0 , bottom: 0),
           child: Text("Doc Scanner" ,style: TextStyle(color: Colors.black , fontWeight: FontWeight.w700 , fontSize: 22),),
-        ) , backgroundColor: Color(0xfff8f5f0) ,iconTheme: IconThemeData(color: Colors.black) ,elevation: 0.0,
+        ) , backgroundColor: const Color(0xfff8f5f0) ,iconTheme: const IconThemeData(color: Colors.black) ,elevation: 0.0,
         actions: [
           IconButton(
-              icon: Icon(CupertinoIcons.square_arrow_down_on_square , size: 25, color: Colors.black,),
+              icon: const Icon(CupertinoIcons.square_arrow_down_on_square , size: 25, color: Colors.black,),
               onPressed: () {
                 createPDF();
                 savePDF();
               }),
           IconButton(
-              icon: Icon(CupertinoIcons.question_diamond , size: 25, color: Colors.black),
+              icon: const Icon(CupertinoIcons.question_diamond , size: 25, color: Colors.black),
               onPressed: () {
                 createPDF();
                 savePDF();
               }),
           IconButton(
-              icon: Icon(CupertinoIcons.pencil_circle , size: 25 , color: Colors.black),
+              icon: const Icon(CupertinoIcons.pencil_circle , size: 25 , color: Colors.black),
               onPressed: () async {
                 final sp = await opendialogue();
                 if(sp!=Null){
@@ -69,7 +78,7 @@ class _Doc_Scanner extends State<Doc_Scanner> {
       ),
         floatingActionButton: Stack(
           children: <Widget>[
-            Padding(padding: EdgeInsets.only(left:31, bottom: 50),
+            Padding(padding: const EdgeInsets.only(left:31, bottom: 50),
               child: Align(
                 alignment: Alignment.bottomCenter,
                 child: FloatingActionButton(
@@ -77,7 +86,7 @@ class _Doc_Scanner extends State<Doc_Scanner> {
                   backgroundColor: Colors.pink,
                   autofocus: true,
                   elevation: 0.0,
-                  child: Icon(CupertinoIcons.camera_viewfinder,  size: 40,color: Colors.white,),),
+                  child: const Icon(CupertinoIcons.camera_viewfinder,  size: 40,color: Colors.white,),),
               ),),
 
             Align(
@@ -87,7 +96,7 @@ class _Doc_Scanner extends State<Doc_Scanner> {
                 backgroundColor: Colors.red,
                 autofocus: true,
                 elevation: 0.0,
-                child: Icon(Icons.add_photo_alternate , size: 30,color: Colors.white,),),
+                child: const Icon(Icons.add_photo_alternate , size: 30,color: Colors.white,),),
             ),
           ],
         ),
@@ -101,7 +110,7 @@ class _Doc_Scanner extends State<Doc_Scanner> {
         itemBuilder: (context, index) => Container(
             height: 400,
             width: double.infinity,
-            margin: EdgeInsets.all(25),
+            margin: const EdgeInsets.all(25),
             child: Image.file(
               _image[index],
               fit: BoxFit.cover,
@@ -113,10 +122,10 @@ class _Doc_Scanner extends State<Doc_Scanner> {
   Future<String?> opendialogue() => showDialog<String>(
       context: context,
       builder: (context) => AlertDialog(
-          title: Text("File Name"),
+          title: const Text("File Name"),
         content: TextField(
           autofocus: true,
-          decoration: InputDecoration(
+          decoration: const InputDecoration(
             hintText: 'Enter File Name'
           ),
           controller: _controller,
@@ -124,7 +133,7 @@ class _Doc_Scanner extends State<Doc_Scanner> {
         actions: [
           TextButton(
               onPressed: onPressed,
-              child: Text("Submit"))
+              child: const Text("Submit"))
         ],
 
       ),
@@ -150,23 +159,75 @@ class _Doc_Scanner extends State<Doc_Scanner> {
       });*/
   getImageFromGallery() async {
     final pickedFile = await picker.getImage(source: ImageSource.gallery);
-    setState(() {
+    if(pickedFile!=null){
+      imageFile = File(pickedFile.path);
+      fileName = Path.basename(imageFile.path);
+      var image = imageLib.decodeImage(await imageFile.readAsBytes());
+      image = imageLib.copyResize(image!, width: 600);
+      Map imagefile = await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => PhotoFilterSelector(
+            title: const Text("Photo Filter"),
+            image: image!,
+            filters: presetFiltersList,
+            filename: fileName,
+            loader: const Center(child: CircularProgressIndicator()),
+            fit: BoxFit.contain,
+          ),
+        ),
+      );
+
+      if (imagefile != null && imagefile.containsKey('image_filtered')) {
+        setState(() {
+          _image.add(imagefile['image_filtered']);
+        });
+        print(imageFile.path);
+      }
+    }
+    /*setState(() {
       if (pickedFile != null) {
         _image.add(File(pickedFile.path));
       } else {
         print('No image selected');
       }
-    });
+    });*/
   }
   getImageFromCamera() async {
     final pickedFile = await picker.getImage(source: ImageSource.camera);
-    setState(() {
+    if(pickedFile!=null){
+      imageFile = File(pickedFile.path);
+      fileName = Path.basename(imageFile.path);
+      var image = imageLib.decodeImage(await imageFile.readAsBytes());
+      image = imageLib.copyResize(image!, width: 600);
+      Map imagefile = await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => PhotoFilterSelector(
+            title: const Text("Photo Filter"),
+            image: image!,
+            filters: presetFiltersList,
+            filename: fileName,
+            loader: const Center(child: CircularProgressIndicator()),
+            fit: BoxFit.contain,
+          ),
+        ),
+      );
+
+      if (imagefile != null && imagefile.containsKey('image_filtered')) {
+        setState(() {
+          _image.add(imagefile['image_filtered']);
+        });
+        print(imageFile.path);
+      }
+    }
+    /*setState(() {
       if (pickedFile != null) {
         _image.add(File(pickedFile.path));
       } else {
         print('No image selected');
       }
-    });
+    });*/
   }
 
   createPDF() async {
@@ -184,7 +245,6 @@ class _Doc_Scanner extends State<Doc_Scanner> {
       prev= _image.length;
     }
   }
-
   savePDF() async {
     try {
       final dir = await getExternalStorageDirectory();
@@ -201,7 +261,7 @@ class _Doc_Scanner extends State<Doc_Scanner> {
     Flushbar(
       title: title,
       message: msg,
-      duration: Duration(seconds: 3),
+      duration: const Duration(seconds: 3),
       icon: const Icon(
         Icons.info,
         color: Colors.blue,
