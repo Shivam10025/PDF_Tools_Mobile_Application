@@ -40,9 +40,8 @@ dependencies:
   path_provider: ^2.0.9
   open_file: ^3.2.1
   photofilters: ^3.0.1
-  image_cropper: ^1.5.0
-  image_crop: ^0.4.0
-
+  edge_detection: ^1.0.9
+  syncfusion_flutter_pdf: ^19.4.56-beta
 
 
 dev_dependencies:
