@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:pdftoolapplicario/screens/doc_scan.dart';
 import 'package:pdftoolapplicario/screens/first_screen.dart';
+import 'package:pdftoolapplicario/screens/pdf_merge.dart';
 
 import 'screens/landing_page.dart';
 

@@ -16,136 +16,34 @@ import 'package:pdf_merger/pdf_merger.dart';
 import 'package:flutter_file_manager/flutter_file_manager.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:get/get.dart';
-import 'package:smart_select/smart_select.dart';
-
-import 'inner_screen.dart';
-class FirstScreen extends StatefulWidget{
-
+class InnerScreen extends StatefulWidget{
+  InnerScreen({required this.filespath});
+  final String filespath;
   @override
-  State<StatefulWidget> createState() => _FirstScreen();
+  State<StatefulWidget> createState() => _InnerScreen();
 }
-class _FirstScreen extends State<FirstScreen>{
+class _InnerScreen extends State<InnerScreen>{
   late SearchBar searchBar;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   TextEditingController controller = TextEditingController();
   var files;
   String _search="";
-  void getFiles() async { //asyn function to get list of files
-    final dir = await getExternalStorageDirectory();
+  void getFiles() async {
+
+    final Directory? _appDocDir = await getExternalStorageDirectory();
+    //App Document Directory + folder name
+    String sp=widget.filespath;
+    final Directory dir =
+    Directory('${_appDocDir?.path}/$sp/');//asyn function
     var fm = FileManager(root: dir); //
     files = await fm.filesTree(
-        excludedPaths: ["/storage/emulated/0/Android"],
-        extensions: ["pdf"], //optional, to filter files, list only pdf files
+      excludedPaths: ["/storage/emulated/0/Android"],
+      extensions: ["pdf"],
     );
     setState(() {}); //update the UI
   }
-  Future<String> createFolderInAppDocDir(String folderName) async {
-    final Directory? _appDocDir = await getExternalStorageDirectory();
-    //App Document Directory + folder name
-    final Directory _appDocDirFolder =
-    Directory('${_appDocDir?.path}/$folderName/');
-
-    if (await _appDocDirFolder.exists()) {
-      //if folder already exists return path
-      return _appDocDirFolder.path;
-    } else {
-      //if folder not exists create folder and then return its path
-      final Directory _appDocDirNewFolder =
-      await _appDocDirFolder.create(recursive: true);
-      return _appDocDirNewFolder.path;
-    }
-  }
-
-  callFolderCreationMethod(String folderInAppDocDir) async {
-    // ignore: unused_local_variable
-    String actualFileName = await createFolderInAppDocDir(folderInAppDocDir);
-    print(actualFileName);
-    setState(() {});
-  }
-
-  final folderController = TextEditingController();
-  String nameOfFolder="";
-  Future<void> _showMyDialog() async => showDialog<void>(
-      context: context,// user must tap button!
-      builder: (BuildContext context) => AlertDialog(
-          title: Column(
-            children: const [
-              Text(
-                'ADD FOLDER',
-                textAlign: TextAlign.left,
-              ),
-              Text(
-                'Type a folder name to add',
-                style: TextStyle(
-                  fontSize: 14,
-                ),
-              )
-            ],
-          ),
-          content: StatefulBuilder(
-            builder: (BuildContext context, StateSetter setState) {
-              return TextField(
-                controller: folderController,
-                autofocus: true,
-                decoration: const InputDecoration(hintText: 'Enter folder name'),
-                onChanged: (val) {
-                  setState(() {
-                    nameOfFolder = folderController.text;
-                    nameOfFolder+="-dc";
-                    print(nameOfFolder);
-                  });
-                },
-              );
-            },
-          ),
-          actions: <Widget>[
-            FlatButton(
-              color: Colors.blue,
-              child: const Text(
-                'Add',
-                style: TextStyle(color: Colors.white),
-              ),
-              onPressed: () async {
-                if (nameOfFolder != "") {
-                  await callFolderCreationMethod(nameOfFolder);
-                  getDir();
-                  setState(() {
-                    folderController.clear();
-                    nameOfFolder = "";
-                  });
-                  Navigator.of(context).pop();
-                }
-              },
-            ),
-            FlatButton(
-              color: Colors.redAccent,
-              child: const Text(
-                'No',
-                style: TextStyle(color: Colors.white),
-              ),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-          ],
-        ),
-    );
-  List<FileSystemEntity> _folders=[];
-  Future<void> getDir() async {
-    final directory = await getExternalStorageDirectory();
-    final dir = directory?.path;
-    String pdfDirectory = '$dir/';
-    final myDir = Directory(pdfDirectory);
-    setState(() {
-      _folders = myDir.listSync(recursive: true, followLinks: false);
-    });
-    _folders.removeWhere((path) => path.toString().contains("-dc")==false);
-    print(_folders);
-  }
   @override
   void initState() {
-    _folders=[];
-    getDir();
     getFiles();
     super.initState();
   }
@@ -160,26 +58,14 @@ class _FirstScreen extends State<FirstScreen>{
         ) , backgroundColor: const Color(0xfff8f5f0) ,iconTheme: const IconThemeData(color: Colors.black) ,elevation: 0.0,
         actions: [
           searchBar.getSearchAction(context) ,
-          IconButton(
-            onPressed:(){
-              _showMyDialog();
-            },
-            icon: const Icon(Icons.add_card)),
-          IconButton(
-              onPressed: (){
-              },
-              icon: const Icon(CupertinoIcons.folder_circle)),
-          IconButton(
-              onPressed: () => Navigator.of(context)
-                  .push(MaterialPageRoute(builder: (_) => FirstScreen())),
-              icon: const Icon(CupertinoIcons.settings))]);
+          ]);
   }
   void onSubmitted(String value) {
     setState(() => _scaffoldKey.currentState
         ?.showSnackBar(SnackBar(content: Text('You wrote $value!'))));
   }
 
-  _FirstScreen() {
+  _InnerScreen() {
     searchBar =SearchBar(
         inBar: false,
         buildDefaultAppBar: buildAppBar,
@@ -207,103 +93,46 @@ class _FirstScreen extends State<FirstScreen>{
       backgroundColor: const Color(0xfffafafa),
       appBar: searchBar.build(context),
       key: _scaffoldKey,
-        body:  Column(
-          children: [
-            DataTable(
-              dataRowHeight: 60,
-              sortAscending: true,
-              columns: const <DataColumn>[
-                DataColumn(
-                  label: Text(
-                    'Folders',
-                    style: TextStyle(fontStyle: FontStyle.italic),
-                  ),
+      body:  Column(
+        children: [
+          DataTable(
+            dataRowHeight: 60,
+            sortAscending: true,
+            columns: const <DataColumn>[
+              DataColumn(
+                label: Text(
+                  'Files',
+                  style: TextStyle(fontStyle: FontStyle.italic),
                 ),
-              ],
-              rows: List.generate(_folders.length, (index) =>
-                  DataRow(
-                      cells: <DataCell>[
-                        DataCell(_folders[index].path.contains("-dc") && !_folders[index].path.contains("2022") ? SizedBox(
-                          height: 300,
-                          child: Card(
-                              child: ListTile(
-                                title: Text(_folders[index].path.split('/').last),
-                                leading: const Icon(Icons.folder, color: Colors.red,),
-                                onTap: () {//OpenFile.open(files[index].path);
-                                  Navigator.push(context, MaterialPageRoute(builder: (builder){
-                                    return InnerScreen(filespath:_folders[index].path.split('/').last);
-                                  }));
-                                },
-                              )),
-                        ) : const Text("")
-              ),]
-                  ),
               ),
-            ),
-            DataTable(
-              dataRowHeight: 60,
-              sortAscending: true,
-              columns: const <DataColumn>[
-                DataColumn(
-                  label: Text(
-                    'Files',
-                    style: TextStyle(fontStyle: FontStyle.italic),
-                  ),
-                ),
-              ],
-              rows: List.generate(files.length, (index) =>
-                  DataRow(
+            ],
+            rows: List.generate(files.length, (index) =>
+                DataRow(
                     cells: <DataCell>[
                       DataCell(files[index].path.contains(_search) ? SizedBox(
                         height: 300,
                         child: Card(
-                             child: ListTile(
-                            title: Text(files[index].path.split('/').last),
-              leading: const Icon(Icons.picture_as_pdf, color: Colors.red,),
-              trailing: IconButton(
-                icon: const Icon(Icons.share , color: Colors.red,),
-                tooltip: 'Share Button',
-                onPressed: () {
-                },
-              ),
-              onTap: () {
-                OpenFile.open(files[index].path);
-              },
-            )),
+                            child: ListTile(
+                              title: Text(files[index].path.split('/').last),
+                              leading: const Icon(Icons.picture_as_pdf, color: Colors.red,),
+                              trailing: IconButton(
+                                icon: const Icon(Icons.share , color: Colors.red,),
+                                tooltip: 'Share Button',
+                                onPressed: () {
+                                },
+                              ),
+                              onTap: () {
+                                OpenFile.open(files[index].path);
+                              },
+                            )),
                       ) : const SizedBox(
-                    height: 0,)
-                  ),]
-              ),
+                        height: 0,)
+                      ),]
+                ),
             ),
-            ),
-          ],
-        ),
-        /*body:files == null? Text("Searching Files"):
-        ListView.builder(  //if file/folder list is grabbed, then show here
-          itemCount: files?.length ?? 0,
-          itemBuilder: (context, index) {
-            if(files[index].path.contains(_search)) {
-              return Card(
-                  child: ListTile(
-                    title: Text(files[index].path
-                        .split('/')
-                        .last),
-                    leading: Icon(Icons.picture_as_pdf),
-                    trailing: Icon(
-                      Icons.arrow_forward, color: Colors.redAccent,),
-                    onTap: () {
-                      /* Navigator.push(context, MaterialPageRoute(builder: (context){
-                      return ViewPDF(pathPDF:files[index].path.toString());
-                      //open viewPDF page on click
-                    }));*/
-                    },
-                  )
-              );
-            }else{
-              return Text("");
-            }
-            },
-        ),*/
+          ),
+        ],
+      ),
       floatingActionButton: Stack(
         children: <Widget>[
           Padding(padding: const EdgeInsets.only(left:31, bottom: 50),
@@ -311,7 +140,7 @@ class _FirstScreen extends State<FirstScreen>{
               alignment: Alignment.bottomCenter,
               child: FloatingActionButton.extended(
                 onPressed: () => Navigator.of(context)
-                    .push(MaterialPageRoute(builder: (_) => Doc_Scanner(filespath: "",))),
+                    .push(MaterialPageRoute(builder: (_) => Doc_Scanner(filespath: widget.filespath,))),
                 autofocus: true,
                 elevation: 0.0,
                 hoverColor: Colors.green,
@@ -320,8 +149,8 @@ class _FirstScreen extends State<FirstScreen>{
                 icon: const Icon(CupertinoIcons.camera_viewfinder),
                 backgroundColor: Colors.pink,
               ),),
-      ),
-      ],
+          ),
+        ],
       ),
       drawer: Drawer(
         // Add a ListView to the drawer. This ensures the user can scroll
@@ -337,11 +166,11 @@ class _FirstScreen extends State<FirstScreen>{
               margin: EdgeInsets.all(20.0),
               padding: EdgeInsets.all(25.0),
               decoration: BoxDecoration(
-                color: Color(0xfff8f5f0),
-                shape: BoxShape.circle,
-                image:DecorationImage(
-                  fit: BoxFit.fill,
-                  image: AssetImage("assets/images/LOGO.png"))
+                  color: Color(0xfff8f5f0),
+                  shape: BoxShape.circle,
+                  image:DecorationImage(
+                      fit: BoxFit.fill,
+                      image: AssetImage("assets/images/LOGO.png"))
               ),
               child: Text('' ,style: TextStyle(color: Colors.black , fontWeight: FontWeight.w500 , fontSize: 20 )),
             ),
@@ -355,8 +184,8 @@ class _FirstScreen extends State<FirstScreen>{
                     ),
                     Padding(
                       padding: EdgeInsets.only(left: 8.0 , bottom: 3),
-          child: Text("PDF Master" ,style: TextStyle(fontFamily: "Poppins",color: Colors.green , fontWeight: FontWeight.w500 , fontSize: 25),),
-          ),
+                      child: Text("PDF Master" ,style: TextStyle(fontFamily: "Poppins",color: Colors.green , fontWeight: FontWeight.w500 , fontSize: 25),),
+                    ),
                   ],
                 ),
               ) ,
@@ -378,10 +207,10 @@ class _FirstScreen extends State<FirstScreen>{
                 ),
               ) ,
               onTap: () {
-                Navigator.of(context).push(MaterialPageRoute(builder: (_) => Doc_Scanner(filespath: "",)));
+                Navigator.of(context).push(MaterialPageRoute(builder: (_) => Doc_Scanner(filespath: widget.filespath,)));
               },
             ),
-           /* ListTile(
+            /* ListTile(
               title: Container(
                 child: Row(
                   children: const [

@@ -42,8 +42,18 @@ dependencies:
   photofilters: ^3.0.1
   edge_detection: ^1.0.9
   syncfusion_flutter_pdf: ^19.4.56-beta
-
-
+  image_size_getter:
+  shared_preferences:
+  provider:
+  flutter_isolate:
+  flutter_share:
+  printing:
+  smart_select: ^4.3.2
+  flutter_file_manager: ^0.2.0
+  pdf_merger: ^0.0.6
+  permission_handler: ^9.2.0
+  file_picker: ^4.5.1
+  flutter_tts: ^3.3.3
 dev_dependencies:
   flutter_test:
     sdk: flutter

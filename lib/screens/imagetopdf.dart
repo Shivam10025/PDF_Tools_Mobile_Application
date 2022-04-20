@@ -21,14 +21,12 @@ import 'package:image_picker/image_picker.dart';
 import 'package:edge_detection/edge_detection.dart';
 
 import 'first_screen.dart';
-class Doc_Scanner extends StatefulWidget {
-  Doc_Scanner({required this.filespath});
-  final String filespath;
+class Image_Pdf extends StatefulWidget {
   @override
-  _Doc_Scanner createState() => _Doc_Scanner();
+  _Image_Pdf createState() => _Image_Pdf();
 }
 
-class _Doc_Scanner extends State<Doc_Scanner> {
+class _Image_Pdf extends State<Image_Pdf> {
   final picker = ImagePicker();
   final pdf = PdfDocument();
   late var sp="Doc_Scanner_";
@@ -67,7 +65,7 @@ class _Doc_Scanner extends State<Doc_Scanner> {
         toolbarHeight: 60,
         title: const Padding(
           padding: EdgeInsets.only(left: 0.0 , bottom: 0),
-          child: Text("Doc Scanner" ,style: TextStyle(color: Colors.black , fontWeight: FontWeight.w700 , fontSize: 22),),
+          child: Text("Image To Pdf" ,style: TextStyle(color: Colors.black , fontWeight: FontWeight.w700 , fontSize: 22),),
         ) , backgroundColor: const Color(0xfff8f5f0) ,iconTheme: const IconThemeData(color: Colors.black) ,elevation: 0.0,
         actions: [
           IconButton(
@@ -101,38 +99,43 @@ class _Doc_Scanner extends State<Doc_Scanner> {
           ),
         ],
       ),
-        floatingActionButton: Stack(
-          children: <Widget>[
-            Padding(padding: const EdgeInsets.only(left:31, bottom: 50),
-              child: Align(
-                alignment: Alignment.bottomCenter,
-                child: FloatingActionButton(
-                  onPressed: getImageFromCamera,
-                  backgroundColor: Colors.pink,
-                  autofocus: true,
-                  elevation: 0.0,
-                  child: const Icon(CupertinoIcons.camera_viewfinder,  size: 40,color: Colors.white,),),
-              ),),
-            Align(
-              alignment: Alignment.bottomRight,
+      floatingActionButton: Stack(
+        children: <Widget>[
+          Padding(padding: const EdgeInsets.only(left:31, bottom: 50),
+            child: Align(
+              alignment: Alignment.bottomCenter,
               child: FloatingActionButton(
-                onPressed:() async {
-                      final ps = await opendialogue2();
-                      if(ps!=Null){
-                        setState(() {
-                        this.ps=ps as String ;
-                        createPDF();
-                        p++;
-                        });
-                      }
-                  },
-                backgroundColor: Colors.red,
+                onPressed: (){
+                  getImageFromCamera;
+                  createPDF();
+                  savePDF();
+                  Navigator.of(context).push(MaterialPageRoute(builder: (_) => FirstScreen()));
+                },
+                backgroundColor: Colors.pink,
                 autofocus: true,
                 elevation: 0.0,
-                child: const Icon(Icons.security , size: 30,color: Colors.white,),),
-            ),
-          ],
-        ),
+                child: const Icon(CupertinoIcons.camera_viewfinder,  size: 40,color: Colors.white,),),
+            ),),
+          Align(
+            alignment: Alignment.bottomRight,
+            child: FloatingActionButton(
+              onPressed:() async {
+                final ps = await opendialogue2();
+                if(ps!=Null){
+                  setState(() {
+                    this.ps=ps as String ;
+                    createPDF();
+                    p++;
+                  });
+                }
+              },
+              backgroundColor: Colors.red,
+              autofocus: true,
+              elevation: 0.0,
+              child: const Icon(Icons.security , size: 30,color: Colors.white,),),
+          ),
+        ],
+      ),
       /*floatingActionButton: FloatingActionButton(
         child: Icon(Icons.add),
         onPressed: getImageFromGallery,
@@ -142,36 +145,36 @@ class _Doc_Scanner extends State<Doc_Scanner> {
         itemCount: _image.length,
         itemBuilder: (context, index) =>
             Container(
-            height: 400,
-            width: double.infinity,
-            key: ValueKey(index),
-            margin: const EdgeInsets.all(25),
-            child: Image.file(
-              _image[index],
-              fit: BoxFit.cover,
-            )), onReorder: reorderData,
+                height: 400,
+                width: double.infinity,
+                key: ValueKey(index),
+                margin: const EdgeInsets.all(25),
+                child: Image.file(
+                  _image[index],
+                  fit: BoxFit.cover,
+                )), onReorder: reorderData,
       )
           : Container(),
     );
   }
   Future<String?> opendialogue() => showDialog<String>(
-      context: context,
-      builder: (context) => AlertDialog(
-          title: const Text("File Name"),
-        content: TextField(
-          autofocus: true,
-          decoration: const InputDecoration(
+    context: context,
+    builder: (context) => AlertDialog(
+      title: const Text("File Name"),
+      content: TextField(
+        autofocus: true,
+        decoration: const InputDecoration(
             hintText: 'Enter File Name'
-          ),
-          controller: _controller,
         ),
-        actions: [
-          TextButton(
-              onPressed: onPressed,
-              child: const Text("Submit"))
-        ],
-
+        controller: _controller,
       ),
+      actions: [
+        TextButton(
+            onPressed: onPressed,
+            child: const Text("Submit"))
+      ],
+
+    ),
   );
   void onPressed(){
     Navigator.of(context).pop(_controller.text);
@@ -284,16 +287,7 @@ class _Doc_Scanner extends State<Doc_Scanner> {
   }
   savePDF() async {
     try {
-      final Directory? _appDocDir = await getExternalStorageDirectory();
-      //App Document Directory + folder name
-      String sp=widget.filespath;
-      final Directory dir;
-      if(sp.length==0){
-          dir=_appDocDir!;
-      }
-      else{
-        dir=Directory('${_appDocDir?.path}/$sp/');
-      }
+      final dir = await getExternalStorageDirectory();
       final file = File('${dir?.path}/'+DateTime.now().toString()+'.pdf');
       OpenFile.open(file.path);
       await file.writeAsBytes(await pdf.save());
