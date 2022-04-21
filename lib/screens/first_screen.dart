@@ -17,6 +17,7 @@ import 'package:flutter_file_manager/flutter_file_manager.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:get/get.dart';
 import 'package:smart_select/smart_select.dart';
+import 'package:share/share.dart';
 
 import 'inner_screen.dart';
 class FirstScreen extends StatefulWidget{
@@ -140,6 +141,7 @@ class _FirstScreen extends State<FirstScreen>{
       _folders = myDir.listSync(recursive: true, followLinks: false);
     });
     _folders.removeWhere((path) => path.toString().contains("-dc")==false);
+    _folders.removeWhere((path) => path.toString().split('/').last.contains(".pdf")==true);
     print(_folders);
   }
   @override
@@ -207,76 +209,79 @@ class _FirstScreen extends State<FirstScreen>{
       backgroundColor: const Color(0xfffafafa),
       appBar: searchBar.build(context),
       key: _scaffoldKey,
-        body:  Column(
-          children: [
-            DataTable(
-              dataRowHeight: 60,
-              sortAscending: true,
-              columns: const <DataColumn>[
-                DataColumn(
-                  label: Text(
-                    'Folders',
-                    style: TextStyle(fontStyle: FontStyle.italic),
+        body:  SingleChildScrollView(
+          child: Column(
+            children: [
+              DataTable(
+                dataRowHeight: 60,
+                sortAscending: true,
+                columns: const <DataColumn>[
+                  DataColumn(
+                    label: Text(
+                      'Folders',
+                      style: TextStyle(fontStyle: FontStyle.italic),
+                    ),
                   ),
+                ],
+                rows: List.generate(_folders.length, (index) =>
+                    DataRow(
+                        cells: <DataCell>[
+                          DataCell(_folders[index].path.contains("-dc") && !_folders[index].path.contains("2022") ? SizedBox(
+                            height: 300,
+                            child: Card(
+                                child: ListTile(
+                                  title: Text(_folders[index].path.split('/').last),
+                                  leading: const Icon(Icons.folder, color: Colors.red,),
+                                  onTap: () {//OpenFile.open(files[index].path);
+                                    Navigator.push(context, MaterialPageRoute(builder: (builder){
+                                      return InnerScreen(filespath:_folders[index].path.split('/').last);
+                                    }));
+                                  },
+                                )),
+                          ) : const Text("")
+                ),]
+                    ),
                 ),
-              ],
-              rows: List.generate(_folders.length, (index) =>
-                  DataRow(
+              ),
+              DataTable(
+                dataRowHeight: 60,
+                sortAscending: true,
+                columns: const <DataColumn>[
+                  DataColumn(
+                    label: Text(
+                      'Files',
+                      style: TextStyle(fontStyle: FontStyle.italic),
+                    ),
+                  ),
+                ],
+                rows: List.generate(files.length, (index) =>
+                    DataRow(
                       cells: <DataCell>[
-                        DataCell(_folders[index].path.contains("-dc") && !_folders[index].path.contains("2022") ? SizedBox(
+                        DataCell(files[index].path.contains(_search) ? SizedBox(
                           height: 300,
                           child: Card(
-                              child: ListTile(
-                                title: Text(_folders[index].path.split('/').last),
-                                leading: const Icon(Icons.folder, color: Colors.red,),
-                                onTap: () {//OpenFile.open(files[index].path);
-                                  Navigator.push(context, MaterialPageRoute(builder: (builder){
-                                    return InnerScreen(filespath:_folders[index].path.split('/').last);
-                                  }));
-                                },
-                              )),
-                        ) : const Text("")
-              ),]
-                  ),
-              ),
-            ),
-            DataTable(
-              dataRowHeight: 60,
-              sortAscending: true,
-              columns: const <DataColumn>[
-                DataColumn(
-                  label: Text(
-                    'Files',
-                    style: TextStyle(fontStyle: FontStyle.italic),
-                  ),
+                               child: ListTile(
+                              title: Text(files[index].path.split('/').last),
+                leading: const Icon(Icons.picture_as_pdf, color: Colors.red,),
+                trailing: IconButton(
+                  icon: const Icon(Icons.share , color: Colors.red,),
+                  tooltip: 'Share Button',
+                  onPressed: () {
+                    Share.shareFiles([files[index].path], text: 'PDF Master');
+                  },
                 ),
-              ],
-              rows: List.generate(files.length, (index) =>
-                  DataRow(
-                    cells: <DataCell>[
-                      DataCell(files[index].path.contains(_search) ? SizedBox(
-                        height: 300,
-                        child: Card(
-                             child: ListTile(
-                            title: Text(files[index].path.split('/').last),
-              leading: const Icon(Icons.picture_as_pdf, color: Colors.red,),
-              trailing: IconButton(
-                icon: const Icon(Icons.share , color: Colors.red,),
-                tooltip: 'Share Button',
-                onPressed: () {
+                onTap: () {
+                  OpenFile.open(files[index].path);
                 },
+              )),
+                        ) : const SizedBox(
+                      height: 0,)
+                    ),]
+                ),
               ),
-              onTap: () {
-                OpenFile.open(files[index].path);
-              },
-            )),
-                      ) : const SizedBox(
-                    height: 0,)
-                  ),]
               ),
-            ),
-            ),
-          ],
+            ],
+          ),
         ),
         /*body:files == null? Text("Searching Files"):
         ListView.builder(  //if file/folder list is grabbed, then show here

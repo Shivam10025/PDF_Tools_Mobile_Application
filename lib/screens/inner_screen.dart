@@ -16,6 +16,8 @@ import 'package:pdf_merger/pdf_merger.dart';
 import 'package:flutter_file_manager/flutter_file_manager.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:get/get.dart';
+
+import 'package:share/share.dart';
 class InnerScreen extends StatefulWidget{
   InnerScreen({required this.filespath});
   final String filespath;
@@ -119,6 +121,7 @@ class _InnerScreen extends State<InnerScreen>{
                                 icon: const Icon(Icons.share , color: Colors.red,),
                                 tooltip: 'Share Button',
                                 onPressed: () {
+                                  Share.shareFiles([files[index].path], text: 'PDF Master');
                                 },
                               ),
                               onTap: () {

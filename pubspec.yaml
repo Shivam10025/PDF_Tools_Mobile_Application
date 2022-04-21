@@ -49,6 +49,7 @@ dependencies:
   flutter_share:
   printing:
   smart_select: ^4.3.2
+  share: ^2.0.4
   flutter_file_manager: ^0.2.0
   pdf_merger: ^0.0.6
   permission_handler: ^9.2.0

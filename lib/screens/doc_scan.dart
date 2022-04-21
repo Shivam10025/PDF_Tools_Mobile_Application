@@ -31,7 +31,7 @@ class Doc_Scanner extends StatefulWidget {
 class _Doc_Scanner extends State<Doc_Scanner> {
   final picker = ImagePicker();
   final pdf = PdfDocument();
-  late var sp="Doc_Scanner_";
+  late var spt="";
   late var ps="";
   late var prev=0;
   late var p=0;
@@ -84,7 +84,7 @@ class _Doc_Scanner extends State<Doc_Scanner> {
                 final sp = await opendialogue();
                 if(sp!=Null){
                   setState(() {
-                    this.sp=sp as String ;
+                    this.spt=sp as String ;
                     p++;
                   });
                 }
@@ -294,7 +294,14 @@ class _Doc_Scanner extends State<Doc_Scanner> {
       else{
         dir=Directory('${_appDocDir?.path}/$sp/');
       }
-      final file = File('${dir?.path}/'+DateTime.now().toString()+'.pdf');
+      final file;
+      if(spt.length==0){
+        file = File('${dir?.path}/'+DateTime.now().toString()+'.pdf');
+      }
+      else{
+        file = File('${dir?.path}/'+spt+'.pdf');
+      }
+
       OpenFile.open(file.path);
       await file.writeAsBytes(await pdf.save());
       showPrintedMessage('success', 'saved to'+file.path,);

@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:pdftoolapplicario/model/slider.dart';
+import 'package:pdftoolapplicario/screens/first_screen.dart';
 import 'package:pdftoolapplicario/widgets/slide_dots.dart';
 import 'package:pdftoolapplicario/widgets/slide_items/slide_item.dart';
 
@@ -84,7 +85,8 @@ class _SliderLayoutViewState extends State<SliderLayoutView> {
                       ),
                       child: FlatButton(
                         onPressed: () {
-
+                          Navigator.of(context)
+                              .push(MaterialPageRoute(builder: (_) => FirstScreen()));
                         },
                         child: const Text(
                         'Get Started',

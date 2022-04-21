@@ -107,8 +107,6 @@ class _Image_Pdf extends State<Image_Pdf> {
               child: FloatingActionButton(
                 onPressed: (){
                   getImageFromCamera;
-                  createPDF();
-                  savePDF();
                   Navigator.of(context).push(MaterialPageRoute(builder: (_) => FirstScreen()));
                 },
                 backgroundColor: Colors.pink,
