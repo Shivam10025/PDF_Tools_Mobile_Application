@@ -45,6 +45,7 @@ dependencies:
   image_size_getter:
   shared_preferences:
   provider:
+  reorderable_grid_view: ^2.2.2
   flutter_isolate:
   flutter_share:
   printing:

@@ -5,6 +5,7 @@ import 'dart:async';
 import 'package:flushbar/flushbar.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:reorderable_grid_view/reorderable_grid_view.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 //import 'package:pdf/pdf.dart';
@@ -138,18 +139,21 @@ class _Doc_Scanner extends State<Doc_Scanner> {
         onPressed: getImageFromGallery,
       ),*/
       body: _image != null
-          ? ReorderableListView.builder(
+          ? ReorderableGridView.builder(
         itemCount: _image.length,
         itemBuilder: (context, index) =>
             Container(
-            height: 400,
-            width: double.infinity,
+            height: 100,
+            width: 100,
             key: ValueKey(index),
             margin: const EdgeInsets.all(25),
             child: Image.file(
               _image[index],
               fit: BoxFit.cover,
-            )), onReorder: reorderData,
+            )), onReorder: reorderData, gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        childAspectRatio: 3 / 4.5,
+      ),
       )
           : Container(),
     );

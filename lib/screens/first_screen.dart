@@ -144,6 +144,36 @@ class _FirstScreen extends State<FirstScreen>{
     _folders.removeWhere((path) => path.toString().split('/').last.contains(".pdf")==true);
     print(_folders);
   }
+  Future<void> _showDeleteDialog(int index) async {
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false, // user must tap button!
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text(
+            'Are you sure to delete this folder?',
+          ),
+          actions: <Widget>[
+            FlatButton(
+              child: const Text('Yes'),
+              onPressed: () async {
+                await _folders.removeAt(index);
+                setState(() {
+                });
+                Navigator.of(context).pop();
+              },
+            ),
+            FlatButton(
+              child: const Text('No'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
   @override
   void initState() {
     _folders=[];
@@ -232,6 +262,13 @@ class _FirstScreen extends State<FirstScreen>{
                                 child: ListTile(
                                   title: Text(_folders[index].path.split('/').last),
                                   leading: const Icon(Icons.folder, color: Colors.red,),
+                                  trailing: IconButton(
+                                    icon: const Icon(Icons.delete, color: Colors.grey,),
+                                    tooltip: 'Delete',
+                                    onPressed: () {
+                                      _showDeleteDialog(index);
+                                    },
+                                  ),
                                   onTap: () {//OpenFile.open(files[index].path);
                                     Navigator.push(context, MaterialPageRoute(builder: (builder){
                                       return InnerScreen(filespath:_folders[index].path.split('/').last);
@@ -264,12 +301,12 @@ class _FirstScreen extends State<FirstScreen>{
                               title: Text(files[index].path.split('/').last),
                 leading: const Icon(Icons.picture_as_pdf, color: Colors.red,),
                 trailing: IconButton(
-                  icon: const Icon(Icons.share , color: Colors.red,),
-                  tooltip: 'Share Button',
-                  onPressed: () {
-                    Share.shareFiles([files[index].path], text: 'PDF Master');
-                  },
-                ),
+                      icon: const Icon(Icons.share , color: Colors.red,),
+                      tooltip: 'Share Button',
+                      onPressed: () {
+                        Share.shareFiles([files[index].path], text: 'PDF Master');
+                      },
+                    ),
                 onTap: () {
                   OpenFile.open(files[index].path);
                 },
