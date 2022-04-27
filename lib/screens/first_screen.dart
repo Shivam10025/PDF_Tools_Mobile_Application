@@ -16,6 +16,7 @@ import 'package:pdf_merger/pdf_merger.dart';
 import 'package:flutter_file_manager/flutter_file_manager.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:get/get.dart';
+import 'package:select_dialog/select_dialog.dart';
 import 'package:smart_select/smart_select.dart';
 import 'package:share/share.dart';
 
@@ -27,8 +28,16 @@ class FirstScreen extends StatefulWidget{
 }
 class _FirstScreen extends State<FirstScreen>{
   late SearchBar searchBar;
+  late final dip;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   TextEditingController controller = TextEditingController();
+  String? ex1;
+  var myMenuItems = <String>[
+    'Share...',
+    'Delete',
+    'Move',
+  ];
+
   var files;
   String _search="";
   void getFiles() async { //asyn function to get list of files
@@ -38,7 +47,7 @@ class _FirstScreen extends State<FirstScreen>{
         excludedPaths: ["/storage/emulated/0/Android"],
         extensions: ["pdf"], //optional, to filter files, list only pdf files
     );
-    setState(() {}); //update the UI
+    setState(() {dip=dir;}); //update the UI
   }
   Future<String> createFolderInAppDocDir(String folderName) async {
     final Directory? _appDocDir = await getExternalStorageDirectory();
@@ -63,7 +72,6 @@ class _FirstScreen extends State<FirstScreen>{
     print(actualFileName);
     setState(() {});
   }
-
   final folderController = TextEditingController();
   String nameOfFolder="";
   Future<void> _showMyDialog() async => showDialog<void>(
@@ -158,6 +166,8 @@ class _FirstScreen extends State<FirstScreen>{
             FlatButton(
               child: const Text('Yes'),
               onPressed: () async {
+                final dir = Directory(_folders[index].path);
+                dir.deleteSync(recursive: true);
                 await _folders.removeAt(index);
                 setState(() {
                 });
@@ -211,7 +221,17 @@ class _FirstScreen extends State<FirstScreen>{
     setState(() => _scaffoldKey.currentState
         ?.showSnackBar(SnackBar(content: Text('You wrote $value!'))));
   }
-
+  Future<File> moveFile(File sourceFile, String newPath) async {
+    try {
+      // prefer using rename as it is probably faster
+      return await sourceFile.rename(newPath);
+    } on FileSystemException catch (e) {
+      // if rename fails, copy the source file and then delete it
+      final newFile = await sourceFile.copy(newPath);
+      await sourceFile.delete();
+      return newFile;
+    }
+  }
   _FirstScreen() {
     searchBar =SearchBar(
         inBar: false,
@@ -301,13 +321,47 @@ class _FirstScreen extends State<FirstScreen>{
                                child: ListTile(
                               title: Text(files[index].path.split('/').last),
                 leading: const Icon(Icons.picture_as_pdf, color: Colors.red,),
-                trailing: IconButton(
-                      icon: const Icon(Icons.share , color: Colors.red,),
-                      tooltip: 'Share Button',
-                      onPressed: () {
-                        Share.shareFiles([files[index].path], text: 'PDF Master');
-                      },
-                    ),
+                trailing: PopupMenuButton<String>(
+                    onSelected: (item){
+                      switch (item) {
+                        case 'Share...':
+                          Share.shareFiles([files[index].path], text: 'PDF Master');
+                          break;
+                        case 'Delete':
+                            final file = files[index];
+                            file.delete();
+                            files.removeAt(index);
+                            setState(() {
+                            });
+                          break;
+                        case 'Move':
+                          SelectDialog.showModal<String>(
+                            context,
+                            label: "Choose Folder",
+                            titleStyle: const TextStyle(color: Colors.brown),
+                            showSearchBox: false,
+                            selectedValue: ex1,
+                            backgroundColor: Colors.amber,
+                            items: List.generate(_folders.length, (ip) => _folders[ip].path),
+                            onChange: (String selected) {
+                              setState(() {
+                                ex1 = selected;
+                                print(ex1);
+                                moveFile(files[index], ex1!+"/"+files[index].path.split('/').last);
+                              });
+                            },
+                          );
+                          break;
+                      }
+                    },
+                    itemBuilder: (BuildContext context) {
+                      return myMenuItems.map((String choice) {
+                        return PopupMenuItem<String>(
+                          child: Text(choice),
+                          value: choice,
+                        );
+                      }).toList();
+                    }),
                 onTap: () {
                   OpenFile.open(files[index].path);
                 },
