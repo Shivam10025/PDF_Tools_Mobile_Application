@@ -217,7 +217,7 @@ class _Doc_Scanner extends State<Doc_Scanner> {
       imageFile = File(imagePath);
       fileName = Path.basename(imageFile.path);
       var image = imageLib.decodeImage(await imageFile.readAsBytes());
-      image = imageLib.copyResize(image!, width: 600);
+      image = imageLib.copyResize(image!, width: 2000);
       Map imagefile = await Navigator.push(
         context,
         MaterialPageRoute(

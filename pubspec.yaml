@@ -46,6 +46,7 @@ dependencies:
   shared_preferences:
   provider:
   reorderable_grid_view: ^2.2.2
+  select_dialog: ^2.0.0
   flutter_isolate:
   flutter_share:
   printing:
