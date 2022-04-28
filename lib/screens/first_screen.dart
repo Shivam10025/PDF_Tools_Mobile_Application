@@ -35,7 +35,7 @@ class _FirstScreen extends State<FirstScreen>{
   var myMenuItems = <String>[
     'Share...',
     'Delete',
-    'Move',
+    'Copy',
   ];
 
   var files;
@@ -261,6 +261,7 @@ class _FirstScreen extends State<FirstScreen>{
       appBar: searchBar.build(context),
       key: _scaffoldKey,
         body:  SingleChildScrollView(
+          scrollDirection: Axis.vertical,
           child: Column(
             children: [
               DataTable(
@@ -301,76 +302,78 @@ class _FirstScreen extends State<FirstScreen>{
                     ),
                 ),
               ),
-              DataTable(
-                dataRowHeight: 60,
-                sortAscending: true,
-                columns: const <DataColumn>[
-                  DataColumn(
-                    label: Text(
-                      'Files',
-                      style: TextStyle(fontStyle: FontStyle.italic),
+              SingleChildScrollView(
+                child: DataTable(
+                  dataRowHeight: 60,
+                  sortAscending: true,
+                  columns: const <DataColumn>[
+                    DataColumn(
+                      label: Text(
+                        'Files',
+                        style: TextStyle(fontStyle: FontStyle.italic),
+                      ),
                     ),
-                  ),
-                ],
-                rows: List.generate(files.length, (index) =>
-                    DataRow(
-                      cells: <DataCell>[
-                        DataCell(files[index].path.contains(_search) ? SizedBox(
-                          height: 300,
-                          child: Card(
-                               child: ListTile(
-                              title: Text(files[index].path.split('/').last),
-                leading: const Icon(Icons.picture_as_pdf, color: Colors.red,),
-                trailing: PopupMenuButton<String>(
-                    onSelected: (item){
-                      switch (item) {
-                        case 'Share...':
-                          Share.shareFiles([files[index].path], text: 'PDF Master');
-                          break;
-                        case 'Delete':
-                            final file = files[index];
-                            file.delete();
-                            files.removeAt(index);
-                            setState(() {
-                            });
-                          break;
-                        case 'Move':
-                          SelectDialog.showModal<String>(
-                            context,
-                            label: "Choose Folder",
-                            titleStyle: const TextStyle(color: Colors.brown),
-                            showSearchBox: false,
-                            selectedValue: ex1,
-                            backgroundColor: Colors.amber,
-                            items: List.generate(_folders.length, (ip) => _folders[ip].path),
-                            onChange: (String selected) {
+                  ],
+                  rows: List.generate(files.length, (index) =>
+                      DataRow(
+                        cells: <DataCell>[
+                          DataCell(files[index].path.contains(_search) ? SizedBox(
+                            height: 300,
+                            child: Card(
+                                 child: ListTile(
+                                title: Text(files[index].path.split('/').last),
+                  leading: const Icon(Icons.picture_as_pdf, color: Colors.red,),
+                  trailing: PopupMenuButton<String>(
+                      onSelected: (item){
+                        switch (item) {
+                          case 'Share...':
+                            Share.shareFiles([files[index].path], text: 'PDF Master');
+                            break;
+                          case 'Delete':
+                              final file = files[index];
+                              file.delete();
+                              files.removeAt(index);
                               setState(() {
-                                ex1 = selected;
-                                print(ex1);
-                                moveFile(files[index], ex1!+"/"+files[index].path.split('/').last);
                               });
-                            },
+                            break;
+                          case 'Copy':
+                            SelectDialog.showModal<String>(
+                              context,
+                              label: "Choose Folder",
+                              titleStyle: const TextStyle(color: Colors.black),
+                              showSearchBox: false,
+                              selectedValue: ex1,
+                              backgroundColor: Colors.white,
+                              items: List.generate(_folders.length, (ip) => _folders[ip].path),
+                              onChange: (String selected) {
+                                setState(() {
+                                  ex1 = selected;
+                                  print(ex1);
+                                  moveFile(files[index], ex1!+"/"+files[index].path.split('/').last);
+                                });
+                              },
+                            );
+                            break;
+                        }
+                      },
+                      itemBuilder: (BuildContext context) {
+                        return myMenuItems.map((String choice) {
+                          return PopupMenuItem<String>(
+                            child: Text(choice),
+                            value: choice,
                           );
-                          break;
-                      }
-                    },
-                    itemBuilder: (BuildContext context) {
-                      return myMenuItems.map((String choice) {
-                        return PopupMenuItem<String>(
-                          child: Text(choice),
-                          value: choice,
-                        );
-                      }).toList();
-                    }),
-                onTap: () {
-                  OpenFile.open(files[index].path);
-                },
-              )),
-                        ) : const SizedBox(
-                      height: 0,)
-                    ),]
+                        }).toList();
+                      }),
+                  onTap: () {
+                    OpenFile.open(files[index].path);
+                  },
+                )),
+                          ) : const SizedBox(
+                        height: 0,)
+                      ),]
+                  ),
                 ),
-              ),
+                ),
               ),
             ],
           ),

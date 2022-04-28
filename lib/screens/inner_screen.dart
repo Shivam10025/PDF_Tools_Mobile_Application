@@ -16,6 +16,7 @@ import 'package:pdf_merger/pdf_merger.dart';
 import 'package:flutter_file_manager/flutter_file_manager.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:get/get.dart';
+import 'package:select_dialog/select_dialog.dart';
 
 import 'package:share/share.dart';
 class InnerScreen extends StatefulWidget{
@@ -29,10 +30,19 @@ class _InnerScreen extends State<InnerScreen>{
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   TextEditingController controller = TextEditingController();
   var files;
+  String? ex1;
+  var myMenuItems = <String>[
+    'Share...',
+    'Delete',
+    'Copy',
+    'Move To Default'
+  ];
+
   String _search="";
   void getFiles() async {
 
     final Directory? _appDocDir = await getExternalStorageDirectory();
+    ex1=_appDocDir?.path.toString();
     //App Document Directory + folder name
     String sp=widget.filespath;
     final Directory dir =
@@ -89,52 +99,118 @@ class _InnerScreen extends State<InnerScreen>{
           });
         });
   }
+  List<FileSystemEntity> _folders=[];
+  Future<void> getDir() async {
+    final directory = await getExternalStorageDirectory();
+    final dir = directory?.path;
+    String pdfDirectory = '$dir/';
+    final myDir = Directory(pdfDirectory);
+    setState(() {
+      _folders = myDir.listSync(recursive: true, followLinks: false);
+    });
+    _folders.removeWhere((path) => path.toString().contains("-dc")==false);
+    _folders.removeWhere((path) => path.toString().split('/').last.contains(".pdf")==true);
+    print(_folders);
+  }
+  Future<File> moveFile(File sourceFile, String newPath) async {
+    try {
+      // prefer using rename as it is probably faster
+      return await sourceFile.rename(newPath);
+    } on FileSystemException catch (e) {
+      // if rename fails, copy the source file and then delete it
+      final newFile = await sourceFile.copy(newPath);
+      await sourceFile.delete();
+      return newFile;
+    }
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xfffafafa),
       appBar: searchBar.build(context),
       key: _scaffoldKey,
-      body:  Column(
-        children: [
-          DataTable(
-            dataRowHeight: 60,
-            sortAscending: true,
-            columns: const <DataColumn>[
-              DataColumn(
-                label: Text(
-                  'Files',
-                  style: TextStyle(fontStyle: FontStyle.italic),
+      body:  SingleChildScrollView(
+        scrollDirection: Axis.vertical,
+        child: Column(
+          children: [
+            SingleChildScrollView(
+              child: DataTable(
+                dataRowHeight: 60,
+                sortAscending: true,
+                columns: const <DataColumn>[
+                  DataColumn(
+                    label: Text(
+                      'Files',
+                      style: TextStyle(fontStyle: FontStyle.italic),
+                    ),
+                  ),
+                ],
+                rows: List.generate(files.length, (index) =>
+                    DataRow(
+                        cells: <DataCell>[
+                          DataCell(files[index].path.contains(_search) ? SizedBox(
+                            height: 300,
+                            child: Card(
+                                child: ListTile(
+                                  title: Text(files[index].path.split('/').last),
+                                  leading: const Icon(Icons.picture_as_pdf, color: Colors.red,),
+                                  trailing: PopupMenuButton<String>(
+                                      onSelected: (item){
+                                        switch (item) {
+                                          case 'Share...':
+                                            Share.shareFiles([files[index].path], text: 'PDF Master');
+                                            break;
+                                          case 'Delete':
+                                            final file = files[index];
+                                            file.delete();
+                                            files.removeAt(index);
+                                            setState(() {
+                                            });
+                                            break;
+                                          case 'Copy':
+                                            SelectDialog.showModal<String>(
+                                              context,
+                                              label: "Choose Folder",
+                                              titleStyle: const TextStyle(color: Colors.black),
+                                              showSearchBox: false,
+                                              selectedValue: ex1,
+                                              backgroundColor: Colors.white,
+                                              items: List.generate(_folders.length, (ip) => _folders[ip].path),
+                                              onChange: (String selected) {
+                                                setState(() {
+                                                  ex1 = selected;
+                                                  print(ex1);
+                                                  moveFile(files[index], ex1!+"/"+files[index].path.split('/').last);
+                                                });
+                                              },
+                                            );
+                                            break;
+                                          case 'Move To Default':
+                                            moveFile(files[index], ex1!+"/"+files[index].path.split('/').last);
+                                            break;
+                                        }
+                                      },
+                                      itemBuilder: (BuildContext context) {
+                                        return myMenuItems.map((String choice) {
+                                          return PopupMenuItem<String>(
+                                            child: Text(choice),
+                                            value: choice,
+                                          );
+                                        }).toList();
+                                      }),
+                                  onTap: () {
+                                    OpenFile.open(files[index].path);
+                                  },
+                                )),
+                          ) : const SizedBox(
+                            height: 0,)
+                          ),]
+                    ),
                 ),
               ),
-            ],
-            rows: List.generate(files.length, (index) =>
-                DataRow(
-                    cells: <DataCell>[
-                      DataCell(files[index].path.contains(_search) ? SizedBox(
-                        height: 300,
-                        child: Card(
-                            child: ListTile(
-                              title: Text(files[index].path.split('/').last),
-                              leading: const Icon(Icons.picture_as_pdf, color: Colors.red,),
-                              trailing: IconButton(
-                                icon: const Icon(Icons.share , color: Colors.red,),
-                                tooltip: 'Share Button',
-                                onPressed: () {
-                                  Share.shareFiles([files[index].path], text: 'PDF Master');
-                                },
-                              ),
-                              onTap: () {
-                                OpenFile.open(files[index].path);
-                              },
-                            )),
-                      ) : const SizedBox(
-                        height: 0,)
-                      ),]
-                ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
       floatingActionButton: Stack(
         children: <Widget>[
